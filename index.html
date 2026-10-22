@@ -1281,7 +1281,7 @@ $("#lockForm").addEventListener("submit", e => {
   const ref = "CFP-" + Math.floor(1000 + Math.random() * 9000), v = estimate();
   $("#ref").textContent = ref;
   $("#doneName").textContent = name.value.trim().split(" ")[0];
-  const lead = { ref, name: name.value.trim(), phone: ph.value.trim(), device: state.model || CATALOG[state.brand].label, details: answerLabels().join(", "), offer: v ? "up to " + fmt(v) : "custom quote", pay: $("#f-pay").value, meet: $("#f-meet").value, tags: "website-quote,funnel:cashforphones,step:lock-in", page: location.href };
+  const lead = { ref, name: name.value.trim(), phone: ph.value.trim(), device: state.model || CATALOG[state.brand].label, details: answerLabels().join(", "), offer: v ? "up to " + fmt(v) : "custom quote", amount: v || 0, pay: $("#f-pay").value, meet: $("#f-meet").value, tags: "website-quote,funnel:cashforphones,step:lock-in", page: location.href };
   const body = `Hi! I want to lock in my price. ${ref}\n${lead.device}: ${lead.details}\nOffer: ${lead.offer}\nPaid by: ${lead.pay}\n${lead.meet.startsWith("Mail") ? "Mail in" : "Meet up"}\n${lead.name}, ${lead.phone}`;
   $("#smsBtn").href = `sms:+1${TEXT_TO}?&body=${encodeURIComponent(body)}`;
   $("#smsNum").textContent = TEXT_TO.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
