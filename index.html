@@ -925,6 +925,7 @@ const BLACK_OPTS = [
 const MARGIN = { pct: 0.2, min: 50, max: 100 }; // our profit per phone, on the standard (Grade B) price
 const FINANCED_FACTOR = 0.8; // still being paid off: locked price x this, to cover the risk of it being blacklisted later
 const BLACKLIST_DED = 20; // Device Buyers takes $20 off blacklisted unlocked phones; locked + blacklisted gets a custom offer
+const ICLOUD_FLAT = { 16: 100, 15: 50, 14: 50, 13: 25 }; // iCloud-locked iPhones in good shape: flat offer by series (16 and newer = $100)
 const MIN_OFFER = 10; // anything lower becomes "we'll text you an offer"
 const HOLD_MIN = 10; // online price guarantee, in minutes
 const TEXT_TO = "2253275717"; // leads text this number
@@ -1129,10 +1130,11 @@ function quote(brand, model, a) {
   const row = d.P[d.st[a.storage ?? d.st.length - 1]], lockKey = a.lock == null || a.lock === 0 ? "U" : "L";
   const cracked = a.damage === 1 || a.damage === 3, backCracked = a.damage === 2 || a.damage === 3;
   let g = row[lockKey] || {}, std = g.B ?? g.A, deds = 0;
-  if (a.lock === 3) { // iCloud / account locked: parts list
-    const ic = PRICES.icloud[model]; if (!ic) return null;
-    g = { S: ic.AB, O: ic.AB, A: ic.AB, B: ic.AB, BC: ic.C, C: ic.C, D: ic.D, DOA: ic.DOA }; std = ic.AB;
-    if (backCracked) deds += ic.back || 0;
+  if (a.lock === 3) { // iCloud / account locked: flat offer for undamaged iPhones, everything else gets a text offer
+    const n = +(model.match(/^iPhone (\d+)/) || [])[1], ic = PRICES.icloud?.[model];
+    if (brand !== "iphone" || !n || /e$/.test(model) || a.cond === 2 || (a.damage ?? 0) > 0 || a.black === 2) return null;
+    const flat = ICLOUD_FLAT[Math.min(n, 16)];
+    return flat && ic && ic.AB - flat >= 20 ? flat : null; // never offer more than Device Buyers pays minus $20
   }
   let grade = a.usage === 0 ? "S" : a.usage === 1 ? "O" : ["A", "B", "BC"][a.cond ?? 0];
   if (cracked) grade = worse(grade, "C");
