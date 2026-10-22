@@ -1285,9 +1285,9 @@ $("#lockForm").addEventListener("submit", e => {
   $("#smsBtn").href = `sms:+1${TEXT_TO}?&body=${encodeURIComponent(body)}`;
   $("#smsNum").textContent = TEXT_TO.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
   if (LEAD_WEBHOOK) { // sendBeacon survives the jump to the Messages app; fetch is the fallback
-    const json = JSON.stringify(lead);
-    if (!(navigator.sendBeacon && navigator.sendBeacon(LEAD_WEBHOOK, new Blob([json], { type: "text/plain" }))))
-      fetch(LEAD_WEBHOOK, { method: "POST", mode: "no-cors", keepalive: true, body: json }).catch(() => {});
+    const form = new URLSearchParams(lead); // form-encoded: allowed cross-site, and GoHighLevel reads it as fields
+    if (!(navigator.sendBeacon && navigator.sendBeacon(LEAD_WEBHOOK, form)))
+      fetch(LEAD_WEBHOOK, { method: "POST", mode: "no-cors", keepalive: true, body: form }).catch(() => {});
   }
   $("#offerView").hidden = true; $("#doneView").hidden = false; stopTimer();
 });
