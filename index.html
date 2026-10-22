@@ -833,6 +833,7 @@ form.lock { gap: 10px; padding-top: 0; border-top: 0; }
 </main>
 </div>
 
+<script src="prices.js"></script>
 <script>
 /* ============================================================
    PRICING CONFIG (PLACEHOLDER NUMBERS)
@@ -890,37 +891,41 @@ const CATALOG = {
     ]
   }
 };
-const STORAGE_MULT = [1, 1.08, 1.16, 1.24];
 const LOCK_OPTS = [
-  { b: "Paid off and unlocked", s: "Works with any carrier", m: 1, tag: ["Top price", "g"], c: "Unlocked" },
-  { b: "Paid off, carrier locked", s: "Locked to AT&T, Verizon, T-Mobile or another carrier", m: 0.86, c: "Carrier locked" },
-  { b: "Still paying it off", s: "There's a balance left on the phone", m: 0.6, tag: ["We buy it", "w"], c: "Financed" },
-  { b: "Signed into an account I can't remove", s: "iCloud or Google lock. Proof of purchase required", m: 0.22, tag: ["Parts value", "b"], c: "Account locked" }
+  { b: "Paid off and unlocked", s: "Works with any carrier", tag: ["Top price", "g"], c: "Unlocked" },
+  { b: "Paid off, carrier locked", s: "Locked to AT&T, Verizon, T-Mobile or another carrier", c: "Carrier locked" },
+  { b: "Still paying it off", s: "There's a balance left on the phone", tag: ["We buy it", "w"], c: "Financed" },
+  { b: "Signed into an account I can't remove", s: "iCloud or Google lock. Proof of purchase required", tag: ["Parts value", "b"], c: "Account locked" }
 ];
 const USAGE_OPTS = [
-  { b: "New, sealed in the box", s: "Never opened", m: 1.15, tag: ["Top price", "g"], c: "New, sealed" },
-  { b: "New, box opened", s: "Never set up or used", m: 1.06, c: "New, opened" },
-  { b: "Used", s: "It's been set up or used", m: 1, c: "Used" }
+  { b: "New, sealed in the box", s: "Never opened", tag: ["Top price", "g"], c: "New, sealed" },
+  { b: "New, box opened", s: "Never set up or used", c: "New, opened" },
+  { b: "Used", s: "It's been set up or used", c: "Used" }
 ];
 const COND_OPTS = [
-  { b: "Like new", s: "No visible scratches", m: 1, tag: ["Best", "g"], c: "Like new" },
-  { b: "Good", s: "Light scratches or wear", m: 0.88, c: "Good" },
-  { b: "Fair", s: "Heavy scratches, dents or a weak battery", m: 0.72, c: "Fair" }
+  { b: "Like new", s: "No visible scratches", tag: ["Best", "g"], c: "Like new" },
+  { b: "Good", s: "Light scratches or wear", c: "Good" },
+  { b: "Fair", s: "Heavy scratches, dents or a weak battery", c: "Fair" }
 ];
 const DAMAGE_OPTS = [
-  { b: "No damage", s: "Everything works, no cracks", m: 1, tag: ["Best", "g"], c: "No damage" },
-  { b: "Cracked screen", s: "Still turns on and works", m: 0.55, tag: ["Still paid", "w"], c: "Cracked screen" },
-  { b: "Cracked back", s: "Screen is fine", m: 0.8, c: "Cracked back" },
-  { b: "Screen and back cracked", s: "Still turns on", m: 0.45, c: "Cracked front & back" },
-  { b: "Something doesn't work", s: "Face ID, camera, speaker, buttons or charging", m: 0.75, c: "Has an issue" },
-  { b: "Won't turn on", s: "Water damage, dead, or other major issues", m: 0.18, tag: ["Parts", "b"], c: "Won't turn on" }
+  { b: "No damage", s: "Everything works, no cracks", tag: ["Best", "g"], c: "No damage" },
+  { b: "Cracked screen", s: "Still turns on and works", tag: ["Still paid", "w"], c: "Cracked screen" },
+  { b: "Cracked back", s: "Screen is fine", c: "Cracked back" },
+  { b: "Screen and back cracked", s: "Still turns on", c: "Cracked front & back" },
+  { b: "Something doesn't work", s: "Face ID, camera, speaker, buttons or charging", c: "Has an issue" },
+  { b: "Won't turn on", s: "Water damage, dead, or other major issues", tag: ["Parts", "b"], c: "Won't turn on" }
 ];
 const BLACK_OPTS = [
-  { b: "No, it's clean", s: "Works on a carrier network", m: 1, tag: ["Top price", "g"], c: "Clean IMEI" },
-  { b: "Not sure", s: "We'll check the IMEI for free", m: 0.9, c: "IMEI unchecked" },
-  { b: "Yes, it's blacklisted", s: "We'll still make you an offer", m: 0.35, tag: ["We still buy", "w"], c: "Blacklisted" }
+  { b: "No, it's clean", s: "Works on a carrier network", tag: ["Top price", "g"], c: "Clean IMEI" },
+  { b: "Not sure", s: "We'll check the IMEI for free", c: "IMEI unchecked" },
+  { b: "Yes, it's blacklisted", s: "We'll still make you an offer", tag: ["We still buy", "w"], c: "Blacklisted" }
 ];
-const RANGE = 0.07; // "up to" figure = estimate + 7%
+/* Offers come from the weekly buyer sheets in prices.js (built by tools/build_prices.py).
+   Offer = the better buyer's price for that grade, minus add-on deductions, minus our margin. */
+const MARGIN = { pct: 0.2, min: 50, max: 100 }; // our profit per phone, on the standard (Grade B) price
+const FINANCED_FACTOR = 0.8; // still being paid off: locked price x this, to cover the risk of it being blacklisted later
+const BLACKLIST_DED = 20; // Device Buyers takes $20 off blacklisted unlocked phones; locked + blacklisted gets a custom offer
+const MIN_OFFER = 10; // anything lower becomes "we'll text you an offer"
 const HOLD_MIN = 10; // online price guarantee, in minutes
 const TEXT_TO = "2253275717"; // leads text this number
 const LEAD_WEBHOOK = ""; // optional: GoHighLevel inbound webhook URL; leads are also posted here when set
@@ -1065,8 +1070,9 @@ function optButton({ b, s, tag }, sel, onClick, cls = "") {
 }
 /* Series first, then the exact model: short lists instead of every model at once */
 function familyOf(brand, name) {
+  if (brand === "iphone" && name.startsWith("iPhone SE")) return "iPhone SE";
   if (brand === "iphone") { const m = name.match(/^iPhone (\d+|X[SR])/); return m ? (m[1].startsWith("X") ? "iPhone XS / XR" : "iPhone " + m[1]) : name; }
-  if (brand === "samsung") { const m = name.match(/^Galaxy (S\d+|Z Fold|Z Flip)/); return m ? "Galaxy " + m[1] : name; }
+  if (brand === "samsung") { const m = name.match(/^Galaxy (S\d+|Z Fold|Z Flip|Note)/); return m ? "Galaxy " + m[1] : name; }
   if (brand === "ipad") { const m = name.match(/^iPad (Pro|Air|mini)/); return m ? "iPad " + m[1] : "iPad"; }
   return name.split(" ")[0] === "Something" ? "Something else" : name.split(" ")[0];
 }
@@ -1077,7 +1083,7 @@ function families() {
   });
   return out;
 }
-const topOf = base => round5(base * STORAGE_MULT[3] * (1 + RANGE));
+const topOf = v => v;
 const SERIES_WORD = { iphone: "iPhone", samsung: "Galaxy", ipad: "iPad", other: "phone" };
 function renderSeries() {
   const box = $("#seriesOpts"); box.innerHTML = "";
@@ -1100,7 +1106,7 @@ function renderModels() {
   const f = families().find(x => x.name === state.family), box = $("#modelOpts"); box.innerHTML = "";
   $("#modelTitle").textContent = `Which ${f.name}?`;
   f.models.forEach(([name, base]) => {
-    box.appendChild(optButton({ b: name, s: base ? "Up to " + fmt(topOf(base)) : "We'll text you an offer" }, state.model === name, () => { state.model = name; updateStage(); setTimeout(() => go(3), 200); }));
+    box.appendChild(optButton({ b: name, s: base ? "Up to " + fmt(topOf(base)) : "We'll text you an offer" }, state.model === name, () => { state.model = name; state.storage = null; updateStage(); setTimeout(next, 200); }));
   });
 }
 function renderList(boxSel, items, key) {
@@ -1110,16 +1116,47 @@ function renderList(boxSel, items, key) {
 /* Which steps apply: single-model series skip the model list; new devices skip wear and damage */
 function flow() {
   const f = state.family && families().find(x => x.name === state.family), used = state.usage == null || state.usage === 2;
-  return [1, f && f.models.length === 1 ? 0 : 2, 3, 4, used ? 5 : 0, used ? 6 : 0, 7, 8, 9, 10].filter(Boolean);
+  const noStorage = state.model && storagesFor()[0] === "*";
+  return [1, f && f.models.length === 1 ? 0 : 2, noStorage ? 0 : 3, 4, used ? 5 : 0, used ? 6 : 0, 7, 8, 9, 10].filter(Boolean);
 }
 function next() { const fl = flow(); go(fl[fl.indexOf(state.step) + 1] || 9); }
-function baseFor() { const c = CATALOG[state.brand]; if (!c || !state.model) return null; return c.models.find(m => m[0] === state.model)[1]; }
-function estimate() {
-  const base = baseFor(); if (!base) return null;
-  let v = base * STORAGE_MULT[state.storage ?? 3];
-  for (const k in ANSWERS) if (state[k] != null) v *= ANSWERS[k][state[k]].m;
-  return round5(v * (1 + RANGE));
+const GRADES = ["S", "O", "A", "B", "BC", "C", "D", "DOA"]; // sealed, open, A, B, B-/C+, C, D, dead
+const worse = (g, h) => GRADES.indexOf(h) > GRADES.indexOf(g) ? h : g;
+const storagesFor = (brand = state.brand, model = state.model) => (window.PRICES?.[brand]?.[model]?.st || []);
+/* Price one device from the answers so far; unanswered questions assume the best case */
+function quote(brand, model, a) {
+  const d = window.PRICES?.[brand]?.[model]; if (!d) return null;
+  const row = d.P[d.st[a.storage ?? d.st.length - 1]], lockKey = a.lock == null || a.lock === 0 ? "U" : "L";
+  const cracked = a.damage === 1 || a.damage === 3, backCracked = a.damage === 2 || a.damage === 3;
+  let g = row[lockKey] || {}, std = g.B ?? g.A, deds = 0;
+  if (a.lock === 3) { // iCloud / account locked: parts list
+    const ic = PRICES.icloud[model]; if (!ic) return null;
+    g = { S: ic.AB, O: ic.AB, A: ic.AB, B: ic.AB, BC: ic.C, C: ic.C, D: ic.D, DOA: ic.DOA }; std = ic.AB;
+    if (backCracked) deds += ic.back || 0;
+  }
+  let grade = a.usage === 0 ? "S" : a.usage === 1 ? "O" : ["A", "B", "BC"][a.cond ?? 0];
+  if (cracked) grade = worse(grade, "C");
+  if (backCracked && a.lock !== 3) { if (d.back) deds += d.back; else grade = worse(grade, "C"); }
+  if (a.damage === 4) grade = worse(grade, "D");
+  if (a.damage === 5) grade = "DOA";
+  let p = g[grade];
+  if (p == null && grade === "S") p = g.O ?? g.A;
+  if (p == null && grade === "O") p = g.A;
+  if (p == null && grade === "BC") p = g.B != null && g.C != null ? (g.B + g.C) / 2 : g.C;
+  if (p == null) return null;
+  if (a.lock === 2) { p *= FINANCED_FACTOR; std = std && std * FINANCED_FACTOR; }
+  if (a.black === 2) { if (lockKey === "U" && a.lock !== 3) deds += BLACKLIST_DED; else return null; }
+  const margin = Math.min(MARGIN.max, Math.max(MARGIN.min, (std ?? p) * MARGIN.pct));
+  const v = Math.floor((p - deds - margin) / 5) * 5;
+  return v >= MIN_OFFER ? v : null;
 }
+/* Highest offer a model can get, for the "Up to" labels */
+function bestQuote(brand, model) {
+  const n = storagesFor(brand, model).length; let best = 0;
+  for (let st = 0; st < n; st++) for (const lock of [0, 1]) for (const usage of [0, 1, 2]) best = Math.max(best, quote(brand, model, { storage: st, lock, usage, cond: 0 }) || 0);
+  return best;
+}
+function estimate() { return state.model ? quote(state.brand, state.model, state) : null; }
 function go(n) {
   state.step = n;
   const pnl = $("#panel"); if (pnl) pnl.scrollTop = 0;
@@ -1135,7 +1172,7 @@ function go(n) {
   $("#back").setAttribute("aria-label", n === 1 ? "Start over" : "Back");
   if (n === 1) renderSeries();
   if (n === 2) renderModels();
-  if (n === 3) renderList("#storageOpts", CATALOG[state.brand].storage, "storage");
+  if (n === 3) renderList("#storageOpts", storagesFor(), "storage");
   if (n === 4) renderList("#usageOpts", USAGE_OPTS, "usage");
   if (n === 5) renderList("#condOpts", COND_OPTS, "cond");
   if (n === 6) renderList("#damageOpts", DAMAGE_OPTS, "damage");
@@ -1191,7 +1228,7 @@ function showDetails() {
   if (!reduce) $("#offerView").animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 300, easing: "ease-out" });
 }
 function answerLabels() {
-  const c = CATALOG[state.brand], out = state.storage != null ? [c.storage[state.storage]] : [];
+  const st = storagesFor()[state.storage], out = st && st !== "*" ? [st] : [];
   for (const k in ANSWERS) if (state[k] != null) out.push(ANSWERS[k][state[k]].c);
   return out;
 }
@@ -1249,6 +1286,7 @@ document.querySelectorAll(".pills").forEach(g => g.addEventListener("click", e =
   g.querySelectorAll("button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-checked", x === b); });
   $("#" + g.dataset.for).value = b.dataset.val || b.textContent;
 }));
+["iphone", "samsung", "ipad"].forEach(k => { if (window.PRICES?.[k]) CATALOG[k].models = Object.keys(PRICES[k]).map(n => [n, bestQuote(k, n)]); });
 renderKinds();
 
 /* Device switcher + reset: test as many devices as you like without leaving the page */
