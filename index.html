@@ -1142,7 +1142,7 @@ function quote(brand, model, a) {
     const flat = ICLOUD_FLAT[Math.min(n, 16)];
     return flat && ic && ic.AB - flat >= 20 ? flat : null; // never offer more than Device Buyers pays minus $20
   }
-  let grade = a.usage === 0 ? "S" : a.usage === 1 ? "O" : ["A", "B", "BC"][a.cond ?? 0];
+  let grade = a.usage == null || a.usage === 0 ? "S" : a.usage === 1 ? "O" : ["A", "B", "BC"][a.cond ?? 0];
   if (cracked) grade = worse(grade, "C");
   if (backCracked && a.lock !== 3) { if (d.back) deds += d.back; else grade = worse(grade, "C"); }
   if (a.damage === 4) grade = worse(grade, "D");
@@ -1163,7 +1163,13 @@ function bestQuote(brand, model) {
   for (let st = 0; st < n; st++) for (const lock of [0, 1]) for (const usage of [0, 1, 2]) best = Math.max(best, quote(brand, model, { storage: st, lock, usage, cond: 0 }) || 0);
   return best;
 }
-function estimate() { return state.model ? quote(state.brand, state.model, state) : null; }
+/* Unanswered storage or lock: show the best of the remaining options, so the number never drops below the "Up to" label */
+function estimate() {
+  if (!state.model) return null;
+  const sts = state.storage != null ? [state.storage] : storagesFor().map((_, i) => i), locks = state.lock != null ? [state.lock] : [0, 1];
+  let best = 0; for (const storage of sts) for (const lock of locks) best = Math.max(best, quote(state.brand, state.model, { ...state, storage, lock }) || 0);
+  return best || null;
+}
 function go(n) {
   state.step = n;
   const pnl = $("#panel"); if (pnl) pnl.scrollTop = 0;
