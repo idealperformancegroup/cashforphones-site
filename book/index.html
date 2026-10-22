@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pick a Time · Cash for Phones</title>
+<link rel="icon" href="../favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Figtree:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f6f5fa; --surface: #ffffff; --ink: #18132a; --body: #4a4560; --muted: #7a7590;
+  --line: #e4e0ee; --primary: #5a2dd2; --primary-soft: #ece5ff;
+  --f-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--body); font: 16px/1.5 var(--f-body); }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font: 700 17px var(--f-display); }
+.brand img { width: 40px; height: 40px; border-radius: 50%; }
+.back { color: var(--primary); font-weight: 600; font-size: 15px; text-decoration: none; white-space: nowrap; }
+main { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
+h1 { margin: 0 0 6px; color: var(--ink); font: 800 clamp(24px, 6vw, 32px)/1.15 var(--f-display); letter-spacing: -.02em; }
+.lead { margin: 0 0 18px; }
+.cal { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; min-height: 640px; }
+.cal iframe { display: block; width: 100%; min-height: 640px; border: 0; overflow: hidden; }
+.alt { margin-top: 16px; font-size: 14px; color: var(--muted); text-align: center; }
+.alt a { color: var(--primary); font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="../"><img src="../logo.webp" alt="">Cash for Phones</a>
+  <a class="back" href="../" id="back">← Back to my quote</a>
+</header>
+<main>
+  <h1>Pick a time to get paid.</h1>
+  <p class="lead">Choose a time that works for you. We'll call to confirm within minutes of your booking and text you a safe meeting spot.</p>
+  <div class="cal">
+    <iframe id="nhiD8PR7XeS5nLiDav0u_booking" title="Book a meetup time" scrolling="no"></iframe>
+  </div>
+  <p class="alt">Calendar not loading? <a id="direct" href="https://links.readytogrow.biz/widget/booking/nhiD8PR7XeS5nLiDav0u" target="_blank" rel="noopener">Open it here</a> or text <a href="sms:+12253275717">225-327-5717</a>.</p>
+</main>
+<script>
+// Pass the seller's name and phone through to the calendar so they don't type them twice
+const CAL = "https://links.readytogrow.biz/widget/booking/nhiD8PR7XeS5nLiDav0u";
+const q = new URLSearchParams(location.search), pass = new URLSearchParams();
+["first_name", "last_name", "phone"].forEach(k => { if (q.get(k)) pass.set(k, q.get(k)); });
+const src = CAL + (pass.toString() ? "?" + pass : "");
+document.getElementById("nhiD8PR7XeS5nLiDav0u_booking").src = src;
+document.getElementById("direct").href = src;
+// Opened from the quote in a new tab: going back means closing this one
+document.getElementById("back").addEventListener("click", e => { if (window.opener) { e.preventDefault(); window.close(); } });
+</script>
+<script src="https://links.readytogrow.biz/js/form_embed.js"></script>
+</body>
+</html>
