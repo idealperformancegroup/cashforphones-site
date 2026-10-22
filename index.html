@@ -931,9 +931,28 @@ const RISKY_MARGIN_MIN = 75; // higher profit floor on blacklisted phones: one b
 const ICLOUD_FLAT = { 16: 100, 15: 50, 14: 50, 13: 25 }; // iCloud-locked iPhones in good shape: flat offer by series (16 and newer = $100)
 const MIN_OFFER = 10; // anything lower becomes "we'll text you an offer"
 const HOLD_MIN = 10; // online price guarantee, in minutes
-const TEXT_TO = "2253275717";
-const BOOKING_URL = "book/"; // our page that embeds the GoHighLevel "Get Paid Meetup" calendar // leads text this number
+const TEXT_TO = "2253275717"; // leads text this number
+const BOOKING_URL = "book/"; // our page that embeds the GoHighLevel "Get Paid Meetup" calendar
+const META_PIXEL_ID = ""; // Meta Events Manager dataset id; visits and quote steps go to Meta when set
+const GOATCOUNTER = ""; // GoatCounter site code (the "xyz" in xyz.goatcounter.com); simple visitor counts when set
 const LEAD_WEBHOOK = "https://services.leadconnectorhq.com/hooks/Z0OrOPJjCM4N03FKXwma/webhook-trigger/6a38f7dc-8a41-45db-a56e-f6ed1c641115"; // optional: GoHighLevel inbound webhook URL; leads are also posted here when set
+
+/* Analytics: both stay off until their id is filled in above */
+if (META_PIXEL_ID) {
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+  fbq("init", META_PIXEL_ID); fbq("track", "PageView");
+}
+if (GOATCOUNTER) {
+  const gc = document.createElement("script"); gc.async = true; gc.src = "https://gc.zgo.at/count.js";
+  gc.dataset.goatcounter = `https://${GOATCOUNTER}.goatcounter.com/count`; document.head.appendChild(gc);
+}
+/* One funnel step: Meta standard event (with the offer as value) + a GoatCounter event */
+function track(step, metaEvent, value) {
+  try {
+    if (window.fbq) fbq(metaEvent ? "track" : "trackCustom", metaEvent || step, value ? { value, currency: "USD", content_name: state.model || "" } : { content_name: state.model || state.brand || "" });
+    if (window.goatcounter?.count) goatcounter.count({ path: "quote-" + step, title: state.model || state.brand || "", event: true });
+  } catch (e) {}
+}
 /* ============================================================ */
 
 const KIND_RANGE = { iphone: "Up to $1,000+", samsung: "Up to $700+", ipad: "Up to $600+", other: "Not buying right now" }; // replaced at load with the real top offer from prices.js
@@ -1031,6 +1050,7 @@ function renderKinds() {
 function choose(k, src) {
   if (state.brand) return;
   if (CATALOG[k].paused) return showPaused();
+  track("start", null);
   hidePaused();
   if (peeked) { peeked.classList.remove("peek"); orbitEl.classList.remove("peeking"); peeked = null; tag.hidden = true; }
   src = src || devs.filter(d => d.dataset.k === k).sort((a, b) => b._depth - a._depth)[0];
@@ -1234,7 +1254,7 @@ function showOffer() {
     if (!reduce) { const t0 = performance.now(); const s = t => { const k = Math.min(1, (t - t0) / 900); el.textContent = fmt(v * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(s); }; requestAnimationFrame(s); }
   }
   $("#summary").textContent = [state.model, ...answerLabels()].join(" · ");
-  const key = JSON.stringify(state); if (key !== quoteKey) { quoteKey = key; startTimer(); }
+  const key = JSON.stringify(state); if (key !== quoteKey) { quoteKey = key; startTimer(); track("offer", "ViewContent", v || 0); }
 }
 /* Details: a screen of its own, so the form is never hidden below the offer */
 function showDetails() {
@@ -1302,8 +1322,11 @@ $("#lockForm").addEventListener("submit", e => {
       fetch(LEAD_WEBHOOK, { method: "POST", mode: "no-cors", keepalive: true, body: form }).catch(() => {});
   }
   $("#offerView").hidden = true; $("#doneView").hidden = false; stopTimer();
+  track("lock-in", "Lead", v || 0);
 });
 $("#again").addEventListener("click", startOver);
+$("#bookBtn").addEventListener("click", () => track("book", "Schedule", estimate() || 0));
+$("#smsBtn").addEventListener("click", () => track("text", "Contact", estimate() || 0));
 $("#pausedBack").addEventListener("click", hidePaused);
 $("#toLock").addEventListener("click", () => go(10));
 document.querySelectorAll(".pills").forEach(g => g.addEventListener("click", e => {
