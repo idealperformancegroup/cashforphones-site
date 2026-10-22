@@ -919,6 +919,7 @@ const BLACK_OPTS = [
 /* Offers come from the weekly buyer sheets in prices.js (built by tools/build_prices.py).
    Offer = the better buyer's price for that grade, minus add-on deductions, minus our margin. */
 const MARGIN = { pct: 0.2, min: 50, max: 100 }; // our profit per phone, on the standard (Grade B) price
+const LOCKED_FALLBACK = 0.8; // no carrier-locked prices on the sheets (iPads): unlocked price x this
 const FINANCED_FACTOR = 0.8; // still being paid off: locked price x this, to cover the risk of it being blacklisted later
 const BLACKLIST_DED = 20; // blacklisted: only Device Buyers buys (unlocked iPhones only), at their price minus $20; anything else gets a text offer
 const RISKY_MARGIN_MIN = 75; // higher profit floor on blacklisted phones: one buyer, and they can be returned
@@ -1126,7 +1127,7 @@ function quote(brand, model, a) {
   const d = window.PRICES?.[brand]?.[model]; if (!d) return null;
   const row = d.P[d.st[a.storage ?? d.st.length - 1]], lockKey = a.lock == null || a.lock === 0 ? "U" : "L";
   const cracked = a.damage === 1 || a.damage === 3, backCracked = a.damage === 2 || a.damage === 3;
-  let g = row[lockKey] || {}, std = g.B ?? g.A, deds = 0, minMargin = MARGIN.min;
+  let g = row[lockKey] || (lockKey === "L" && row.U ? Object.fromEntries(Object.entries(row.U).map(([k, p]) => [k, p * LOCKED_FALLBACK])) : {}), std = g.B ?? g.A, deds = 0, minMargin = MARGIN.min;
   if (a.black === 2) {
     const dbRow = PRICES.iphone_db?.[model]?.[d.st[a.storage ?? d.st.length - 1]];
     if (brand !== "iphone" || lockKey !== "U" || a.lock === 3 || !dbRow) return null;
