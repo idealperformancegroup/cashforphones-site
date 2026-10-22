@@ -800,12 +800,8 @@ form.lock { gap: 10px; padding-top: 0; border-top: 0; }
     <div class="view-inner">
       <div class="sec-head">
         <span class="eyebrow">Reviews</span>
-        <h2>What sellers say.</h2>
-      </div>
-      <div class="reviews">
-        <article class="rcard"><div class="stars">★★★★★</div><p>"Got a quote on the site, met that afternoon and had the money in my Cash App before I got back in my car."</p><footer><span>Customer name · iPhone 15 Pro</span><span class="sample">Sample</span></footer></article>
-        <article class="rcard"><div class="stars">★★★★★</div><p>"My screen was shattered and the carrier offered me nothing. They still gave me a fair price and reset it right in front of me."</p><footer><span>Customer name · Galaxy S23</span><span class="sample">Sample</span></footer></article>
-        <article class="rcard"><div class="stars">★★★★★</div><p>"I was still paying it off and figured nobody would buy it. Quick, professional, and the price matched the quote."</p><footer><span>Customer name · iPhone 14</span><span class="sample">Sample</span></footer></article>
+        <h2>Real reviews only.</h2>
+        <p>We just opened in Baton Rouge, so we're collecting reviews from our first sellers now. We'll post them here as they come in, and you can see our latest buys on Instagram.</p>
       </div>
       <div class="view-cta"><a class="btn btn-primary" href="#quote" data-v="quote">Get my free quote</a> <a class="btn btn-ghost" href="https://instagram.com/cashforphoneslouisiana" target="_blank" rel="noopener">See us on Instagram</a></div>
     </div>
@@ -933,7 +929,7 @@ const TEXT_TO = "2253275717"; // leads text this number
 const LEAD_WEBHOOK = ""; // optional: GoHighLevel inbound webhook URL; leads are also posted here when set
 /* ============================================================ */
 
-const KIND_RANGE = { iphone: "$50 – $1,000+", samsung: "$50 – $700+", ipad: "$75 – $600+", other: "Not buying right now" };
+const KIND_RANGE = { iphone: "Up to $1,000+", samsung: "Up to $700+", ipad: "Up to $600+", other: "Not buying right now" }; // replaced at load with the real top offer from prices.js
 const ORBIT = ["iphone", "samsung", "ipad", "iphone", "other", "samsung", "iphone", "ipad", "samsung", "other", "iphone", "samsung"];
 const FINISHES = ["linear-gradient(160deg,#d9d6e2,#f8f7fb 45%,#bcb7c9)", "linear-gradient(160deg,#5b4a7e,#9d8cc4 45%,#4a3a6a)", "linear-gradient(160deg,#2b2b31,#6b6b75 45%,#26262c)", "linear-gradient(160deg,#c9b38a,#efe2c4 45%,#a8936a)"];
 const ICONS = {
@@ -1299,7 +1295,7 @@ document.querySelectorAll(".pills").forEach(g => g.addEventListener("click", e =
   g.querySelectorAll("button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-checked", x === b); });
   $("#" + g.dataset.for).value = b.dataset.val || b.textContent;
 }));
-["iphone", "samsung", "ipad"].forEach(k => { if (window.PRICES?.[k]) CATALOG[k].models = Object.keys(PRICES[k]).map(n => [n, bestQuote(k, n)]); });
+["iphone", "samsung", "ipad"].forEach(k => { if (window.PRICES?.[k]) { CATALOG[k].models = Object.keys(PRICES[k]).map(n => [n, bestQuote(k, n)]); KIND_RANGE[k] = "Up to " + fmt(Math.max(...CATALOG[k].models.map(m => m[1]))); } });
 renderKinds();
 
 /* Device switcher + reset: test as many devices as you like without leaving the page */

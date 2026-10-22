@@ -101,7 +101,8 @@ def parse_bdp_iphones(secs, T):
         cells = [c.strip() for c in line.split(",")]
         i = next((k for k, c in enumerate(cells) if re.fullmatch(r"\d+(GB|TB)", c)), None)
         if i is None: continue
-        vals = split_money(",".join(cells[i + 1:]))
+        rest = re.sub(r",\s*\d+(GB|TB)\s*$", "", ",".join(cells[i + 1:]))  # rows repeat the storage at the end
+        vals = split_money(rest)
         for v, g in zip(vals, ["S", "O"]): put(T, cur, cells[i], lock, g, money(v))
 
 def parse_db_icloud(secs):
@@ -159,7 +160,7 @@ def parse_db_samsung(secs, T):
 def parse_bdp_samsung(secs, T):
     cur = None
     for line in secs.get("Samsung", []):
-        m = re.match(r"^GALAXY ([^,]+),NEW", line)
+        m = re.match(r"^((?:GALAXY |Z )[^,]+),NEW", line)  # some headers drop "GALAXY" (Z FOLD 6)
         if m:
             cur = sam_name(m.group(1)); cur = cur if sam_ok(cur) else None; continue
         if not cur: continue
@@ -219,12 +220,37 @@ def st_key(s):
     if s == "*": return 0
     n = int(re.match(r"\d+", s).group()); return n * (1024 if s.endswith("TB") else 1)
 
+def consistent(P, sts):
+    """Sheets sometimes pay more for a worse answer (C over B-/C+, locked over unlocked, 512GB over 1TB).
+    Lower the odd value so a worse answer never quotes higher. Only ever lowers, so the margin stays safe."""
+    fixes = 0
+    for _ in range(3):
+        for i, st in enumerate(sts):
+            locks = P[st]
+            for lock, g in locks.items():
+                best = None
+                for gr in GRADES:  # a worse grade never pays more than a better one
+                    if gr not in g: continue
+                    if best is not None and g[gr] > best: g[gr] = best; fixes += 1
+                    best = g[gr]
+                for gr, p in g.items():
+                    if lock == "L" and gr in locks.get("U", {}) and p > locks["U"][gr]:  # locked never beats unlocked
+                        g[gr] = locks["U"][gr]; fixes += 1
+                    if i + 1 < len(sts):  # a smaller storage never beats a bigger one
+                        up = P[sts[i + 1]].get(lock, {}).get(gr)
+                        if up is not None and g[gr] > up: g[gr] = up; fixes += 1
+    return fixes
+
+FIXES = []
+
 def finish(T):
     out = {}
     for model, d in T.items():
         P = {st: locks for st, locks in d["P"].items() if any(len(g) for g in locks.values())}
         if not P: continue
         sts = sorted(P, key=st_key)
+        n = consistent(P, sts)
+        if n: FIXES.append(f"{model} ({n})")
         out[model] = {"st": sts, "P": {st: P[st] for st in sts}}
         if d["back"]: out[model]["back"] = d["back"]
         if d["lens"]: out[model]["lens"] = d["lens"]
@@ -254,3 +280,4 @@ if __name__ == "__main__":
     for k in ("iphone", "samsung", "ipad"):
         print(k, len(data[k]), "models:", ", ".join(data[k]))
     print("icloud", len(data["icloud"]))
+    print("evened out:", ", ".join(FIXES) or "nothing")
