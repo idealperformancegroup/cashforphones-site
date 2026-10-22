@@ -230,7 +230,9 @@ def consistent(P, sts):
             for lock, g in locks.items():
                 best = None
                 for gr in GRADES:  # a worse grade never pays more than a better one
-                    if gr not in g: continue
+                    if gr not in g:  # unlocked not bought at this grade (newest Samsungs): the locked price still caps worse grades
+                        if lock == "U" and gr in locks.get("L", {}): best = locks["L"][gr] if best is None else min(best, locks["L"][gr])
+                        continue
                     if best is not None and g[gr] > best: g[gr] = best; fixes += 1
                     best = g[gr]
                 for gr, p in g.items():
