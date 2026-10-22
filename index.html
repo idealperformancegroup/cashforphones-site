@@ -926,7 +926,7 @@ const ICLOUD_FLAT = { 16: 100, 15: 50, 14: 50, 13: 25 }; // iCloud-locked iPhone
 const MIN_OFFER = 10; // anything lower becomes "we'll text you an offer"
 const HOLD_MIN = 10; // online price guarantee, in minutes
 const TEXT_TO = "2253275717"; // leads text this number
-const LEAD_WEBHOOK = ""; // optional: GoHighLevel inbound webhook URL; leads are also posted here when set
+const LEAD_WEBHOOK = "https://services.leadconnectorhq.com/hooks/Z0OrOPJjCM4N03FKXwma/webhook-trigger/6a38f7dc-8a41-45db-a56e-f6ed1c641115"; // optional: GoHighLevel inbound webhook URL; leads are also posted here when set
 /* ============================================================ */
 
 const KIND_RANGE = { iphone: "Up to $1,000+", samsung: "Up to $700+", ipad: "Up to $600+", other: "Not buying right now" }; // replaced at load with the real top offer from prices.js
@@ -1284,7 +1284,7 @@ $("#lockForm").addEventListener("submit", e => {
   const body = `Hi! I want to lock in my price. ${ref}\n${lead.device}: ${lead.details}\nOffer: ${lead.offer}\nPaid by: ${lead.pay}\n${lead.meet.startsWith("Mail") ? "Mail in" : "Meet up"}\n${lead.name}, ${lead.phone}`;
   $("#smsBtn").href = `sms:+1${TEXT_TO}?&body=${encodeURIComponent(body)}`;
   $("#smsNum").textContent = TEXT_TO.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
-  if (LEAD_WEBHOOK) fetch(LEAD_WEBHOOK, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(lead) }).catch(() => {});
+  if (LEAD_WEBHOOK) fetch(LEAD_WEBHOOK, { method: "POST", mode: "no-cors", keepalive: true, body: JSON.stringify(lead) }).catch(() => {});
   $("#offerView").hidden = true; $("#doneView").hidden = false; stopTimer();
 });
 $("#again").addEventListener("click", startOver);
