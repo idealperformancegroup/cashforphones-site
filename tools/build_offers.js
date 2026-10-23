@@ -43,6 +43,10 @@ for (const [brand, title] of BRANDS) {
   const lines = [];
   for (const model in PRICES[brand]) {
     const d = PRICES[brand][model];
+    // Quick price: the first number the bot gives when a seller only names the model
+    const top = quote(brand, model, { storage: 0, lock: 0, black: 0, usage: 2, cond: 0, damage: 0 });
+    const base = d.st[0] === "*" ? "" : `${d.st[0]}, `;
+    lines.push(top ? `${model} | QUICK PRICE | up to $${top} (${base}paid off and unlocked, used, no cracks, everything works). Damage, carrier lock, financing or a blacklist bring it down.` : `${model} | QUICK PRICE | no set price, hand off to Hen`);
     d.st.forEach((st, si) => {
       const name = st === "*" ? `${model} (any storage)` : `${model} ${st}`;
       for (const [lockName, lock] of LOCKS) {
@@ -60,7 +64,8 @@ for (const [brand, title] of BRANDS) {
 
 const rules = [
   `Cash for Phones Louisiana offer sheet. Updated ${stamp} (prices dated ${PRICES.updated}).`,
-  "Each line is one phone: model and storage | lock status | condition, then three dollar amounts: OPEN > COUNTER > MAX.",
+  "QUICK PRICE lines give the first number to say when a seller only names the model: smallest storage, unlocked, used, no damage.",
+  "Each other line is one phone: model and storage | lock status | condition, then three dollar amounts: OPEN > COUNTER > MAX.",
   "OPEN is the first offer. COUNTER is the one step up if the seller pushes back. MAX is the most we ever pay for that phone in that condition. Never go above MAX.",
   "All offers are \"up to\" amounts, confirmed after a quick in-person check. Payment is cash, Cash App or Zelle.",
   "\"text offer\" means there is no set price: hand off to Hen. Phones that won't turn on, blacklisted, MDM-locked, prepaid-carrier (Straight Talk, Tracfone, Total, Xfinity) and other brands: hand off to Hen.",
