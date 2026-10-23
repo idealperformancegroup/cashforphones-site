@@ -1,7 +1,7 @@
 /* Build the offer sheet the GoHighLevel chat bot reads: offers/index.html and offers.txt.
 
 Usage: node tools/build_offers.js [index.html] [prices.js]
-build_prices.py runs this after every price refresh, so the sheet always matches the site.
+Run it after every price refresh (the 12-hour price audit does), so the sheet always matches the site.
 
 Every number comes from the page's own quote(), so the bot can never offer more than the site.
 Each condition shows three numbers, open -> counter -> max:

@@ -283,7 +283,3 @@ if __name__ == "__main__":
         print(k, len(data[k]), "models:", ", ".join(data[k]))
     print("icloud", len(data["icloud"]))
     print("evened out:", ", ".join(FIXES) or "nothing")
-    # Rebuild the chat bot's offer sheet (offers/index.html, offers.txt) from the new prices
-    import os, subprocess
-    here = os.path.dirname(os.path.abspath(__file__))
-    subprocess.run(["node", os.path.join(here, "build_offers.js"), os.path.join(here, "..", "index.html"), os.path.abspath(out_path)], check=True)
