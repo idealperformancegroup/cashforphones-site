@@ -1,4 +1,4 @@
-Cash for Phones Louisiana offer sheet. Updated Oct 30, 2026, 7:55 AM CT (prices dated 2026-10-30).
+Cash for Phones Louisiana offer sheet. Updated Oct 30, 2026, 7:44 PM CT (prices dated 2026-10-31).
 QUICK PRICE lines give the first number to say when a seller only names the model: smallest storage, unlocked, used, no damage.
 Each other line is one phone: model and storage | lock status | condition, then three dollar amounts: OPEN > COUNTER > MAX.
 OPEN is the first offer. COUNTER is the one step up if the seller pushes back. MAX is the most we ever pay for that phone in that condition. Never go above MAX.
@@ -507,8 +507,8 @@ iPhone XS Max 512GB | iCloud locked | no set price, hand off to Hen
 == Samsung Galaxy ==
 Galaxy S26 Ultra | QUICK PRICE | no set price, hand off to Hen
 Galaxy S26 Ultra (any storage) | Unlocked | Sealed text offer; Open box text offer; Like new text offer; Good text offer; Fair 295 > 310 > 325; Cracked screen 295 > 310 > 325; Cracked back 295 > 310 > 325; Screen and back cracked 295 > 310 > 325; Something doesn't work 225 > 240 > 250; Won't turn on: hand off to Hen
-Galaxy S26 Ultra (any storage) | Carrier locked | Sealed 410 > 435 > 455; Open box 370 > 390 > 410; Like new 370 > 390 > 410; Good 325 > 345 > 360; Fair 290 > 305 > 320; Cracked screen 270 > 285 > 295; Cracked back 270 > 285 > 295; Screen and back cracked 270 > 285 > 295; Something doesn't work 165 > 175 > 180; Won't turn on: hand off to Hen
-Galaxy S26 Ultra (any storage) | Financed | Sealed 325 > 345 > 360; Open box 295 > 310 > 325; Like new 295 > 310 > 325; Good 260 > 275 > 285; Fair 230 > 245 > 255; Cracked screen 215 > 225 > 235; Cracked back 215 > 225 > 235; Screen and back cracked 215 > 225 > 235; Something doesn't work 130 > 135 > 140; Won't turn on: hand off to Hen
+Galaxy S26 Ultra (any storage) | Carrier locked | Sealed 405 > 430 > 450; Open box 365 > 385 > 405; Like new 365 > 385 > 405; Good 330 > 350 > 365; Fair 285 > 300 > 315; Cracked screen 265 > 280 > 290; Cracked back 265 > 280 > 290; Screen and back cracked 265 > 280 > 290; Something doesn't work 160 > 170 > 175; Won't turn on: hand off to Hen
+Galaxy S26 Ultra (any storage) | Financed | Sealed 325 > 345 > 360; Open box 295 > 310 > 325; Like new 295 > 310 > 325; Good 265 > 280 > 290; Fair 225 > 240 > 250; Cracked screen 210 > 220 > 230; Cracked back 210 > 220 > 230; Screen and back cracked 210 > 220 > 230; Something doesn't work 130 > 135 > 140; Won't turn on: hand off to Hen
 Galaxy S26+ | QUICK PRICE | no set price, hand off to Hen
 Galaxy S26+ (any storage) | Unlocked | Sealed text offer; Open box text offer; Like new text offer; Good text offer; Fair 190 > 200 > 210; Cracked screen 190 > 200 > 210; Cracked back 190 > 200 > 210; Screen and back cracked 190 > 200 > 210; Something doesn't work 155 > 165 > 170; Won't turn on: hand off to Hen
 Galaxy S26+ (any storage) | Carrier locked | Sealed 275 > 290 > 305; Open box 235 > 250 > 260; Like new 235 > 250 > 260; Good 205 > 215 > 225; Fair 185 > 195 > 205; Cracked screen 160 > 170 > 175; Cracked back 160 > 170 > 175; Screen and back cracked 160 > 170 > 175; Something doesn't work 85 > 90 > 95; Won't turn on: hand off to Hen
